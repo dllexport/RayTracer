@@ -36,14 +36,15 @@ void Renderer::render()
     memset(image_buffer.get(), 0, width * height * 3 * sizeof(float));
     memset(image_buffer_uint8.get(), 0, width * height * 3 * sizeof(uint8_t));
 
+#pragma omp parallel for
     for (int row = height - 1; row >= 0; row--)
     {
-
+#pragma omp parallel for
         for (int col = 0; col < width; col++)
         {
             auto idx = (height - 1 - row) * width * 3 + 3 * col;
             Eigen::Vector3f color = Eigen::Vector3f::Zero();
-
+#pragma omp parallel for
             for (int sps = 0; sps < samples; ++sps)
             {
                 float u = (float(col) + randomUnit()) / float(width);
@@ -77,11 +78,6 @@ std::shared_ptr<Hittable> Renderer::RandomScene()
     auto list = std::make_shared<HittableList>();
     auto lamberPlane = std::make_shared<Lambertian>(Eigen::Vector3f(0.5, 0.5, 0.5));
     list->Add(std::make_shared<Sphere>(Eigen::Vector3f(0, 0, -1000.0), 1000, lamberPlane));
-    auto metal = std::make_shared<Metal>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), 0);
-    //  list->Add(std::make_shared<Sphere>(Eigen::Vector3f(-3, -5, 3), 3, metal));
-    auto dielectric = std::make_shared<Dielectric>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), 1);
-    list->Add(std::make_shared<Sphere>(Eigen::Vector3f(0, 0, 2), 2, dielectric));
-    return list;
 
     int ball_count = 2;
 
@@ -98,10 +94,13 @@ std::shared_ptr<Hittable> Renderer::RandomScene()
                     auto metal = std::make_shared<Metal>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), randomUnit());
                     list->Add(std::make_shared<Sphere>(center, 0.2, metal));
                 }
-                else
+				else if (random >= 0.5 && random < 0.8)
                 {
                     auto lamber = std::make_shared<Lambertian>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()));
                     list->Add(std::make_shared<Sphere>(center, 0.2, lamber));
+                } else {
+					auto dielectric = std::make_shared<Dielectric>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), 1 + randomUnit());
+					list->Add(std::make_shared<Sphere>(center, 0.2, dielectric));
                 }
             }
         }

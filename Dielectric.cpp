@@ -24,12 +24,23 @@ bool Dielectric::scatter(const Ray &in, const HitRecord &record, Eigen::Vector3f
     if (float(hit_point_normal.transpose() * in.Direction()) > 0)
     {
         refraction_ratio = index_of_refraction;
+        hit_point_normal = -hit_point_normal;
     }
 
     auto unitInDirection = in.Direction();
     unitInDirection.normalize();
 
-    Eigen::Vector3f refracted = refract(unitInDirection, record.normal, refraction_ratio);
+    double cos_theta = std::min(float(unitInDirection.transpose() * hit_point_normal), 1.0f);
+    double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+    Eigen::Vector3f refracted;
+    if (refraction_ratio * sin_theta > 1.0)
+    {
+        refracted = in.Direction() - hit_point_normal * (in.Direction().transpose() * hit_point_normal) * 2.0f;
+    }
+    else
+    {
+        refracted = refract(unitInDirection, hit_point_normal, refraction_ratio);
+    }
 
     scattered = Ray(record.position, refracted);
     return true;
