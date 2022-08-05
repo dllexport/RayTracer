@@ -26,10 +26,14 @@ void Renderer::render()
     srand(time(nullptr));
     auto world = RandomScene();
 
-    Eigen::Vector3f camera_position(5, 5, 3);
-    Eigen::Vector3f look_at(0, 0, 2);
+    Eigen::Vector3f camera_position(3, 3, 3);
+    Eigen::Vector3f look_at(0, 0, 0);
+    float dist_to_focus = (camera_position - look_at).norm();
+    float aperture = 0.5f;
 
-    Camera camera(camera_position, look_at, 60, float(width) / float(height));
+    spdlog::info("focus {} apert {}", dist_to_focus, aperture);
+
+    Camera camera(camera_position, look_at, 60, float(width) / float(height), aperture, dist_to_focus);
 
     auto image_buffer = std::make_unique<float[]>(width * height * 3);
     auto image_buffer_uint8 = std::make_unique<uint8_t[]>(width * height * 3);
@@ -94,13 +98,15 @@ std::shared_ptr<Hittable> Renderer::RandomScene()
                     auto metal = std::make_shared<Metal>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), randomUnit());
                     list->Add(std::make_shared<Sphere>(center, 0.2, metal));
                 }
-				else if (random >= 0.5 && random < 0.8)
+                else if (random >= 0.5 && random < 0.8)
                 {
                     auto lamber = std::make_shared<Lambertian>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()));
                     list->Add(std::make_shared<Sphere>(center, 0.2, lamber));
-                } else {
-					auto dielectric = std::make_shared<Dielectric>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), 1 + randomUnit());
-					list->Add(std::make_shared<Sphere>(center, 0.2, dielectric));
+                }
+                else
+                {
+                    auto dielectric = std::make_shared<Dielectric>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), 1 + randomUnit());
+                    list->Add(std::make_shared<Sphere>(center, 0.2, dielectric));
                 }
             }
         }

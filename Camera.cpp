@@ -5,6 +5,8 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 
+#include "Random.h"
+
 static float radians(float degrees)
 {
     return (EIGEN_PI / 180.0) * degrees;
@@ -15,8 +17,19 @@ static float degrees(float radians)
     return radians / (EIGEN_PI / 180.0);
 }
 
-Camera::Camera(Eigen::Vector3f position, Eigen::Vector3f target, float fov, float aspect_ratio) : position(position),
-                                                                                                  target(target), fov(fov), aspect_ratio(aspect_ratio)
+Eigen::Vector3f randomInUnitDisk()
+{
+    while (true)
+    {
+        auto p = Eigen::Vector3f(randomUnit() - 1, randomUnit() - 1, 0);
+        if (float(p.transpose() * p) >= 1)
+            continue;
+        return p;
+    }
+}
+
+Camera::Camera(Eigen::Vector3f position, Eigen::Vector3f target, float fov, float aspect_ratio, float apart, float focal_dist) : position(position),
+                                                                                                                                 target(target), fov(fov), aspect_ratio(aspect_ratio), apart(apart), focal_dist(focal_dist)
 {
     update();
 }
@@ -40,31 +53,10 @@ void Camera::update()
     y = z.cross(x);
     y.normalize();
 
-    auto half_height = viewport_height / 2.0;
-    auto half_width = viewport_width / 2.0;
+    horizontal_direction = x * viewport_width * focal_dist;
+    vertical_direction = y * viewport_height * focal_dist;
 
-    bottom_left_position = position - half_height * y - half_width * x - 1 * z;
-    Eigen::Vector3f top_left_position = position + half_height * y - half_width * x - 1 * z;
-    Eigen::Vector3f top_right_position = position + half_height * y + half_width * x - 1 * z;
-    Eigen::Vector3f bottom_right_position = position - half_height * y + half_width * x - 1 * z;
-
-    spdlog::info("bottom_left_position: {},{},{}", bottom_left_position.x(), bottom_left_position.y(), bottom_left_position.z());
-    spdlog::info("top_left_position: {},{},{}", top_left_position.x(), top_left_position.y(), top_left_position.z());
-    spdlog::info("top_right_position: {},{},{}", top_right_position.x(), top_right_position.y(), top_right_position.z());
-    spdlog::info("bottom_right_position: {},{},{}", bottom_right_position.x(), bottom_right_position.y(), bottom_right_position.z());
-    spdlog::info("x: {},{},{}", x.x(), x.y(), x.z());
-    spdlog::info("y: {},{},{}", y.x(), y.y(), y.z());
-    spdlog::info("z: {},{},{}", z.x(), z.y(), z.z());
-
-    Eigen::Vector3f xvec = x + position;
-    Eigen::Vector3f yvec = y + position;
-    Eigen::Vector3f zvec = z + position;
-    spdlog::info("camera axe x : [{},{},{}]", xvec.x(), xvec.y(), xvec.z());
-    spdlog::info("camera axe y: [{},{},{}]", yvec.x(), yvec.y(), yvec.z());
-    spdlog::info("camera axe z: [{},{},{}]", zvec.x(), zvec.y(), zvec.z());
-
-    vertical_direction = y * viewport_height;
-    horizontal_direction = x * viewport_width;
+    bottom_left_position = position - horizontal_direction * 0.5f - vertical_direction * 0.5f - z * focal_dist;
 }
 
 Ray Camera::GetRay(float u, float v)
@@ -74,7 +66,11 @@ Ray Camera::GetRay(float u, float v)
     assert(u <= 1.0f);
     assert(u <= 1.0f);
 
-    Eigen::Vector3f test = bottom_left_position + horizontal_direction * u + vertical_direction * v - position;
+    float lens_radius = apart / 2;
+    Eigen::Vector3f rd = lens_radius * randomInUnitDisk();
+    Eigen::Vector3f offset = x * rd.x() + y * rd.y();
 
-    return Ray(position, test);
+    Eigen::Vector3f test = bottom_left_position + horizontal_direction * u + vertical_direction * v - position - offset;
+
+    return Ray(position + offset, test);
 }
