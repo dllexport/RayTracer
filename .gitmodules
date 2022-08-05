@@ -1,0 +1,9 @@
+[submodule "3rd/eigen"]
+	path = 3rd/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "3rd/stb"]
+	path = 3rd/stb
+	url = https://github.com/nothings/stb.git
+[submodule "3rd/spdlog"]
+	path = 3rd/spdlog
+	url = https://github.com/gabime/spdlog.git
