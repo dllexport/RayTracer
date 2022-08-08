@@ -28,8 +28,8 @@ Eigen::Vector3f randomInUnitDisk()
     }
 }
 
-Camera::Camera(Eigen::Vector3f position, Eigen::Vector3f target, float fov, float aspect_ratio, float apart, float focal_dist) : position(position),
-                                                                                                                                 target(target), fov(fov), aspect_ratio(aspect_ratio), apart(apart), focal_dist(focal_dist)
+Camera::Camera(Eigen::Vector3f position, Eigen::Vector3f target, float fov, float aspect_ratio, float apart, float focal_dist, float time_from, float time_to) : position(position),
+                                                                                                                                 target(target), fov(fov), aspect_ratio(aspect_ratio), apart(apart), focal_dist(focal_dist), time_from(time_from), time_to(time_to)
 {
     update();
 }
@@ -72,5 +72,5 @@ Ray Camera::GetRay(float u, float v)
 
     Eigen::Vector3f test = bottom_left_position + horizontal_direction * u + vertical_direction * v - position - offset;
 
-    return Ray(position + offset, test);
+    return Ray(position + offset, test, randomBetween(time_from, time_to));
 }

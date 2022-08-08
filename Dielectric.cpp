@@ -42,6 +42,6 @@ bool Dielectric::scatter(const Ray &in, const HitRecord &record, Eigen::Vector3f
         refracted = refract(unitInDirection, hit_point_normal, refraction_ratio);
     }
 
-    scattered = Ray(record.position, refracted);
+    scattered = Ray(record.position, refracted, in.SendTime());
     return true;
 }

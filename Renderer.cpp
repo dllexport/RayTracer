@@ -7,6 +7,7 @@
 #include "Lambertian.h"
 #include "Metal.h"
 #include "Sphere.h"
+#include "MovingSphere.h"
 #include "Camera.h"
 #include "Random.h"
 
@@ -29,11 +30,11 @@ void Renderer::render()
     Eigen::Vector3f camera_position(3, 3, 3);
     Eigen::Vector3f look_at(0, 0, 0);
     float dist_to_focus = (camera_position - look_at).norm();
-    float aperture = 0.5f;
+    float aperture = 0.0f;
 
     spdlog::info("focus {} apert {}", dist_to_focus, aperture);
 
-    Camera camera(camera_position, look_at, 60, float(width) / float(height), aperture, dist_to_focus);
+    Camera camera(camera_position, look_at, 60, float(width) / float(height), aperture, dist_to_focus, 0.0f, 1.0f);
 
     auto image_buffer = std::make_unique<float[]>(width * height * 3);
     auto image_buffer_uint8 = std::make_unique<uint8_t[]>(width * height * 3);
@@ -95,13 +96,15 @@ std::shared_ptr<Hittable> Renderer::RandomScene()
                 Eigen::Vector3f center(rx + 0.9 * randomUnit(), ry + 0.9 * randomUnit(), std::max(randomUnit(), 0.2f));
                 if (random < 0.5)
                 {
+                    Eigen::Vector3f center2 = center + Eigen::Vector3f(0, 0, randomBetween(0.0f, 0.5f));
                     auto metal = std::make_shared<Metal>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()), randomUnit());
-                    list->Add(std::make_shared<Sphere>(center, 0.2, metal));
+                    list->Add(std::make_shared<MovingSphere>(center, center2, 0.0, 1.0, 0.2, metal));
                 }
                 else if (random >= 0.5 && random < 0.8)
                 {
+                    Eigen::Vector3f center2 = center + Eigen::Vector3f(0, 0, randomBetween(0.0f, 0.5f));
                     auto lamber = std::make_shared<Lambertian>(Eigen::Vector3f(randomUnit(), randomUnit(), randomUnit()));
-                    list->Add(std::make_shared<Sphere>(center, 0.2, lamber));
+                    list->Add(std::make_shared<MovingSphere>(center, center2, 0.0, 1.0, 0.2, lamber));
                 }
                 else
                 {

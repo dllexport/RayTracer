@@ -7,7 +7,7 @@ class Ray
 public:
     Ray();
 
-    Ray(Eigen::Vector3f origin, Eigen::Vector3f direction);
+    Ray(Eigen::Vector3f origin, Eigen::Vector3f direction, float time = 0.0f);
 
     Eigen::Vector3f PointAt(float t);
 
@@ -21,7 +21,12 @@ public:
         return direction;
     }
 
+    float SendTime() const {
+        return send_time;
+    }
+
 private:
     Eigen::Vector3f origin = {};
     Eigen::Vector3f direction = {};
+    float send_time = 0.0f;
 };

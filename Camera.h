@@ -7,7 +7,7 @@
 class Camera
 {
 public:
-    Camera(Eigen::Vector3f position, Eigen::Vector3f target, float fov, float aspect_ratio, float apart, float focal_dist);
+    Camera(Eigen::Vector3f position, Eigen::Vector3f target, float fov, float aspect_ratio, float apart, float focal_dist, float time_from, float time_to);
 
     Ray GetRay(float u, float v);
 
@@ -26,6 +26,9 @@ public:
     Eigen::Vector3f x;
     Eigen::Vector3f y;
     Eigen::Vector3f z;
+
+    float time_from;
+    float time_to;
 
 private:
     void update();

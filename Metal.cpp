@@ -10,7 +10,7 @@ bool Metal::scatter(const Ray &in, const HitRecord &record, Eigen::Vector3f &att
     auto ray = in;
     Eigen::Vector3f reflected_direction = ray.Direction() - record.normal * (ray.Direction().transpose() * record.normal) * 2.0f;
 
-    scattered = Ray(record.position, reflected_direction + RandomInUnitSphere() * fuzz);
+    scattered = Ray(record.position, reflected_direction + RandomInUnitSphere() * fuzz, in.SendTime());
     attenuation = albedo;
     return true;
 }
